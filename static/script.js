@@ -10,8 +10,10 @@ async function loadData() {
             return;
         }
 
-        // Display charts with the fetched data
+        // Process and display pie chart
         displayPieChart(data);
+
+        // Process and display line chart
         displayLineChart(data);
 
     } catch (error) {
@@ -35,8 +37,8 @@ function displayPieChart(data) {
             labels: labels,
             datasets: [{
                 data: counts,
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: generateColors(labels.length),
+                borderColor: 'rgba(0, 0, 0, 0.1)',
                 borderWidth: 1
             }]
         },
@@ -91,8 +93,7 @@ function displayLineChart(data) {
             responsive: true,
             plugins: {
                 legend: {
-                    display: true,
-                    position: 'top'
+                    display: false
                 },
                 tooltip: {
                     callbacks: {
@@ -111,4 +112,14 @@ function displayLineChart(data) {
             }
         }
     });
+}
+
+// Helper function to generate colors for pie chart segments
+function generateColors(count) {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+        const hue = Math.floor(Math.random() * 360);
+        colors.push(`hsl(${hue}, 70%, 70%)`);
+    }
+    return colors;
 }
