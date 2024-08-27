@@ -1,22 +1,75 @@
+/* General body styling */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9; /* Light gray background for a clean look */
+    color: #333; /* Dark gray text for better readability */
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 20px;
     margin: 0;
-  }
-  
-  .container {
-    max-width: 800px;
+}
+
+/* Container styling */
+.container {
+    max-width: 900px;
     width: 100%;
-  }
-  
-  button {
+    background-color: #fff; /* White background for the container */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    padding: 20px;
+    box-sizing: border-box; /* Ensures padding is included in width calculation */
+}
+
+/* Header styling */
+h1 {
+    font-size: 2em;
+    color: #2c3e50; /* Darker color for the header */
     margin-bottom: 20px;
-  }
-  
-  canvas {
+}
+
+/* Button styling */
+button {
+    background-color: #3498db; /* Bright blue background */
+    color: #fff; /* White text */
+    border: none;
+    border-radius: 5px; /* Slightly rounded corners */
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
     margin-bottom: 20px;
-  }
-  
+}
+
+/* Button hover effect */
+button:hover {
+    background-color: #2980b9; /* Darker blue on hover */
+    transform: scale(1.05); /* Slight zoom effect */
+}
+
+/* Canvas styling */
+canvas {
+    display: block; /* Ensure canvas is displayed as a block element */
+    margin-bottom: 20px;
+    border-radius: 8px; /* Rounded corners for canvases */
+}
+.hidden {
+    display: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    button {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    canvas {
+        width: 100%;
+        height: auto; /* Maintain aspect ratio */
+    }
+}

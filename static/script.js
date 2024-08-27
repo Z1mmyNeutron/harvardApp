@@ -1,4 +1,7 @@
 document.getElementById('loadDataBtn').addEventListener('click', loadData);
+document.getElementById('toggleDataBtn').addEventListener('click', toggleDataVisibility);
+
+let chartsVisible = true; // Track visibility state
 
 async function loadData() {
     try {
@@ -16,9 +19,27 @@ async function loadData() {
         // Process and display line chart
         displayLineChart(data);
 
+        // Ensure charts are visible
+        if (chartsVisible) {
+            document.getElementById('chartsContainer').classList.remove('hidden');
+            updateToggleButtonText(false);
+        }
+
     } catch (error) {
         console.error('Error:', error);
     }
+}
+
+function toggleDataVisibility() {
+    const chartsContainer = document.getElementById('chartsContainer');
+    chartsVisible = !chartsVisible; // Toggle visibility state
+    chartsContainer.classList.toggle('hidden', !chartsVisible);
+    updateToggleButtonText(!chartsVisible);
+}
+
+function updateToggleButtonText(hidden) {
+    const button = document.getElementById('toggleDataBtn');
+    button.textContent = hidden ? 'Show Data' : 'Hide Data';
 }
 
 function displayPieChart(data) {
