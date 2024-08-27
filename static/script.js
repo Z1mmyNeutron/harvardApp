@@ -31,7 +31,10 @@ async function loadData() {
 }
 
 function displayPieChart(data) {
-    const titles = data.records.map(item => item.title || 'Unknown Title');
+    const titles = data.records.map(item => {
+        const match = item.title.match(/\[(.*?)\]/);
+        return match ? match[1] : 'Unknown Title';
+    });
     const titleCounts = titles.reduce((acc, title) => {
         acc[title] = (acc[title] || 0) + 1;
         return acc;
@@ -77,7 +80,10 @@ function displayPieChart(data) {
 }
 
 function displayLineChart(data) {
-    const titles = data.records.map(item => item.title || 'Unknown Title');
+    const titles = data.records.map(item => {
+        const match = item.title.match(/\[(.*?)\]/);
+        return match ? match[1] : 'Unknown Title';
+    });
     const titleCounts = titles.reduce((acc, title) => {
         acc[title] = (acc[title] || 0) + 1;
         return acc;
