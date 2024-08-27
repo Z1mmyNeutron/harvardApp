@@ -20,6 +20,9 @@ async function loadData() {
         // Process and display line chart
         displayLineChart(data);
 
+        // Display art data
+        displayArt(data);
+
         dataLoaded = true; // Mark data as loaded
         if (!chartsVisible) {
             toggleDataVisibility(); // Make sure data is shown if it was hidden
@@ -31,10 +34,7 @@ async function loadData() {
 }
 
 function displayPieChart(data) {
-    const titles = data.records.map(item => {
-        const match = item.title.match(/\[(.*?)\]/);
-        return match ? match[1] : 'Unknown Title';
-    });
+    const titles = data.map(item => item.title || 'Unknown Title');
     const titleCounts = titles.reduce((acc, title) => {
         acc[title] = (acc[title] || 0) + 1;
         return acc;
@@ -80,10 +80,7 @@ function displayPieChart(data) {
 }
 
 function displayLineChart(data) {
-    const titles = data.records.map(item => {
-        const match = item.title.match(/\[(.*?)\]/);
-        return match ? match[1] : 'Unknown Title';
-    });
+    const titles = data.map(item => item.title || 'Unknown Title');
     const titleCounts = titles.reduce((acc, title) => {
         acc[title] = (acc[title] || 0) + 1;
         return acc;
@@ -129,7 +126,27 @@ function displayLineChart(data) {
     });
 }
 
-// Helper function to generate colors for pie chart segments
+function displayArt(data) {
+    const artContainer = document.getElementById('artContainer');
+    artContainer.innerHTML = ''; // Clear existing content
+
+    data.forEach(item => {
+        const artItem = document.createElement('div');
+        artItem.className = 'art-item';
+
+        const title = document.createElement('h2');
+        title.textContent = item.title || 'Untitled';
+
+        const image = document.createElement('img');
+        image.src = item.image_url || 'path_to_placeholder_image';
+        image.alt = item.title || 'Art Image';
+
+        artItem.appendChild(title);
+        artItem.appendChild(image);
+        artContainer.appendChild(artItem);
+    });
+}
+
 function generateColors(count) {
     const colors = [];
     for (let i = 0; i < count; i++) {
@@ -139,7 +156,6 @@ function generateColors(count) {
     return colors;
 }
 
-// Toggle visibility of the charts
 function toggleDataVisibility() {
     const chartsContainer = document.getElementById('chartsContainer');
     if (chartsVisible) {
