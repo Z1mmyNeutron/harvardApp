@@ -1,7 +1,8 @@
 document.getElementById('loadDataBtn').addEventListener('click', loadData);
 document.getElementById('toggleDataBtn').addEventListener('click', toggleDataVisibility);
 
-let chartsVisible = true; // Track visibility state
+let dataLoaded = false;
+let chartsVisible = true; // Tracks whether charts are visible or hidden
 
 async function loadData() {
     try {
@@ -19,27 +20,14 @@ async function loadData() {
         // Process and display line chart
         displayLineChart(data);
 
-        // Ensure charts are visible
-        if (chartsVisible) {
-            document.getElementById('chartsContainer').classList.remove('hidden');
-            updateToggleButtonText(false);
+        dataLoaded = true; // Mark data as loaded
+        if (!chartsVisible) {
+            toggleDataVisibility(); // Make sure data is shown if it was hidden
         }
 
     } catch (error) {
         console.error('Error:', error);
     }
-}
-
-function toggleDataVisibility() {
-    const chartsContainer = document.getElementById('chartsContainer');
-    chartsVisible = !chartsVisible; // Toggle visibility state
-    chartsContainer.classList.toggle('hidden', !chartsVisible);
-    updateToggleButtonText(!chartsVisible);
-}
-
-function updateToggleButtonText(hidden) {
-    const button = document.getElementById('toggleDataBtn');
-    button.textContent = hidden ? 'Show Data' : 'Hide Data';
 }
 
 function displayPieChart(data) {
@@ -143,4 +131,19 @@ function generateColors(count) {
         colors.push(`hsl(${hue}, 70%, 70%)`);
     }
     return colors;
+}
+
+// Toggle visibility of the charts
+function toggleDataVisibility() {
+    const chartsContainer = document.getElementById('chartsContainer');
+    if (chartsVisible) {
+        chartsContainer.style.display = 'none'; // Hide charts
+        document.getElementById('toggleDataBtn').textContent = 'Show Data'; // Update button text
+    } else {
+        if (dataLoaded) {
+            chartsContainer.style.display = 'block'; // Show charts
+        }
+        document.getElementById('toggleDataBtn').textContent = 'Hide Data'; // Update button text
+    }
+    chartsVisible = !chartsVisible; // Toggle the state
 }

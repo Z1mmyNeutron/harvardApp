@@ -19,12 +19,23 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
     padding: 20px;
     box-sizing: border-box; /* Ensures padding is included in width calculation */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center align items horizontally */
 }
 
 /* Header styling */
 h1 {
     font-size: 2em;
     color: #2c3e50; /* Darker color for the header */
+    margin-bottom: 20px;
+    text-align: center; /* Center align text */
+}
+
+/* Button container styling */
+.button-container {
+    display: flex; /* Ensure buttons are in a row */
+    gap: 10px; /* Space between buttons */
     margin-bottom: 20px;
 }
 
@@ -38,7 +49,6 @@ button {
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
-    margin-bottom: 20px;
 }
 
 /* Button hover effect */
@@ -48,11 +58,19 @@ button:hover {
 }
 
 /* Canvas styling */
+#chartsContainer {
+    display: flex; /* Align canvases in a row */
+    flex-direction: column;
+    align-items: center;
+}
+
 canvas {
     display: block; /* Ensure canvas is displayed as a block element */
     margin-bottom: 20px;
     border-radius: 8px; /* Rounded corners for canvases */
 }
+
+/* Hidden class */
 .hidden {
     display: none;
 }
