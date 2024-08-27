@@ -4,7 +4,6 @@ from flask_caching import Cache
 from dotenv import load_dotenv
 import os
 import json
-import re  # Import re for regular expressions
 
 # Load environment variables from .env file
 load_dotenv()
@@ -50,11 +49,6 @@ def get_data():
                 app.logger.info('Skipped item without title')
                 continue
 
-            # Remove "Untitled " and text inside square brackets from the title
-            if title.startswith("Untitled "):
-                title = title[len("Untitled "):]
-            title = re.sub(r'\[.*?\]', '', title).strip()
-                
             # Extract artist name if available
             if 'people' in item and len(item['people']) > 0:
                 artist_name = item['people'][0].get('name', 'Unknown artist')
