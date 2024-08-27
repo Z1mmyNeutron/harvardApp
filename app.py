@@ -4,6 +4,7 @@ from flask_caching import Cache
 from dotenv import load_dotenv
 import os
 import json
+import re  # Import re for regular expressions
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,18 +30,32 @@ def get_data():
         response = requests.get(f'{BASE_URL}?apikey={API_KEY}')
         response.raise_for_status()
         data = response.json()
-        
+
         # Log raw response for debugging
         app.logger.info(f'Raw API response: {data}')
 
         # Extract relevant fields for the frontend
         art_data = []
         for item in data.get('records', []):
-            title = item.get('title', 'No title available')  # Fallback if no title
-            image_url = item.get('primaryimageurl', None)  # Set to None if no image URL
+            title = item.get('title')
+            image_url = item.get('primaryimageurl')
             artist_name = None
             persistent_link = item.get('url', 'No link available')  # Extract the persistent link
 
+            # Log item being processed for debugging
+            app.logger.info(f'Processing item: {item}')
+
+            # Skip items without a title
+            if not title:
+                app.logger.info('Skipped item without title')
+                continue
+
+            # Remove "Untitled " and text inside square brackets from the title
+            if title.startswith("Untitled "):
+                title = title[len("Untitled "):]
+            title = re.sub(r'\[.*?\]', '', title).strip()
+                
+            # Extract artist name if available
             if 'people' in item and len(item['people']) > 0:
                 artist_name = item['people'][0].get('name', 'Unknown artist')
 
@@ -59,6 +74,9 @@ def get_data():
                 'artist_name': artist_name,
                 'persistent_link': persistent_link  # Add the persistent link
             })
+
+        # Log final art data for debugging
+        app.logger.info(f'Final art data: {art_data}')
 
         # Write JSON data to a file
         with open('art_data.json', 'w') as file:
