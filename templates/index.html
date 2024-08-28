@@ -16,8 +16,16 @@
       <h1>Harvard Art Museums Data</h1>
       <div class="button-container">
         <button id="loadDataBtn">Load Data</button>
-        <button id="toggleDataBtn">Hide Data</button>
+        <button id="toggleDataBtn">Hide Charts</button>
         <button id="toggleArtBtn">Hide Art</button>
+        <button id="generateReportBtn">Generate Report</button>
+        <script>
+          document
+            .getElementById("generateReportBtn")
+            .addEventListener("click", function () {
+              window.location.href = "/api/report";
+            });
+        </script>
       </div>
 
       <div id="chartsContainer">
