@@ -81,7 +81,6 @@ def create_charts(data):
 
     return pie_chart_path, bar_chart_path, line_chart_path
 
-
 def format_counts(counts):
     # Define the width for indentation and count columns
     indent = " " * 4  # Adjust as needed
@@ -89,7 +88,8 @@ def format_counts(counts):
     formatted_counts = ""
 
     for title, count in counts.items():
-        clean_title = title.strip('[]')
+        # Strip leading and trailing brackets, and remove any extra whitespace
+        clean_title = title.strip('[]').strip()
         formatted_counts += f"{indent}{count:>{count_width}}: {clean_title}\n"
     
     return formatted_counts.strip()
@@ -124,7 +124,7 @@ def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_cou
     additional_space = 50
     y_position = height - margin
 
-    def add_chart(title, image_path, y_position):
+    def add_chart(title, image_path, y_position, conclusion_text):
         total_height = chart_height + title_space + additional_space
 
         if y_position < total_height + margin:
@@ -135,36 +135,49 @@ def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_cou
         c.drawString(margin, y_position, title)
         c.drawImage(image_path, margin, y_position - chart_height - title_space, width=width - 2 * margin, height=chart_height)
 
-        y_position -= (total_height + margin)
+        y_position -= (chart_height + title_space + additional_space)
+
+        # Add conclusion below chart
+        if conclusion_text:
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(margin, y_position, "Conclusion:")
+            y_position -= 20
+
+            c.setFont("Helvetica", 12)
+            text_object = c.beginText(margin, y_position)
+            text_object.setFont("Helvetica", 12)
+            for line in conclusion_text.split('\n'):
+                # Handle long lines and avoid extra new lines
+                if line.strip():
+                    text_object.textLine(line.strip())
+            c.drawText(text_object)
+            y_position -= len(conclusion_text.split('\n')) * 15  # Adjust spacing based on line count
 
         return y_position
 
-    y_position = add_chart("Pie Chart", pie_chart_path, y_position)
-    y_position = add_chart("Bar Chart", bar_chart_path, y_position)
-    y_position = add_chart("Line Chart", line_chart_path, y_position)
+    # Add Pie Chart
+    pie_chart_conclusion = (
+        f"- The pie chart illustrates the distribution of pieces with the same title. The following\n"
+        f"are the counts for each title:\n"
+        f"{format_counts(title_counts)}"
+    )
+    y_position = add_chart("Pie Chart", pie_chart_path, y_position, pie_chart_conclusion)
 
-    def draw_conclusion_section(title, counts, y_position):
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(margin, y_position, title)
-        y_position -= 20
+    # Add Bar Chart
+    bar_chart_conclusion = (
+        f"- The bar chart shows the number of pieces attributed to each artist. The artist counts\n"
+        f"are:\n"
+        f"{format_counts(artist_counts)}"
+    )
+    y_position = add_chart("Bar Chart", bar_chart_path, y_position, bar_chart_conclusion)
 
-        c.setFont("Helvetica", 12)
-        text_object = c.beginText(margin, y_position)
-        text_object.setFont("Helvetica", 12)
-
-        intro_indent = " " * 4
-        for line in counts.split('\n'):
-            text_object.textLine(f"{intro_indent}{line}")
-
-        c.drawText(text_object)
-        y_position -= len(counts.split('\n')) * 15  # Adjust spacing based on line count
-
-        return y_position
-
-    c.showPage()
-
-    conclusion_text = format_conclusion(title_counts, artist_counts)
-    y_position = draw_conclusion_section("Conclusion:", conclusion_text, height - margin - 50)
+    # Add Line Chart
+    line_chart_conclusion = (
+        f"- The line chart represents the number of pieces with the same title over time. The\n"
+        f"counts for each title are:\n"
+        f"{format_counts(title_counts)}"
+    )
+    y_position = add_chart("Line Chart", line_chart_path, y_position, line_chart_conclusion)
 
     # Finalize PDF
     c.save()
