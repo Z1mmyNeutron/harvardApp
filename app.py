@@ -60,7 +60,7 @@ def get_data():
                     image_url = f'https://api.harvardartmuseums.org{image_url}'
             else:
                 # Provide a default image URL or placeholder if necessary
-                image_url = 'https://via.placeholder.com/150'
+                image_url = 'https://cdn.vectorstock.com/i/500p/82/99/no-image-available-like-missing-picture-vector-43938299.jpg'
 
             art_data.append({
                 'title': title,

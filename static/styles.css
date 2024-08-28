@@ -62,11 +62,20 @@ button:hover {
     display: flex; /* Align canvases in a row */
     flex-direction: column;
     align-items: center;
+    margin: 20px auto; 
+}
+.chart-container {
+    width: 400px;
+    height: 400px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 10px;
 }
 
 canvas {
     display: block; /* Ensure canvas is displayed as a block element */
-    margin-bottom: 20px;
     border-radius: 8px; /* Rounded corners for canvases */
 }
 
@@ -74,23 +83,30 @@ canvas {
 .hidden {
     display: none;
 }
-
-/* Art container styling */
-.art-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
+#artContainer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Three columns */
+    gap: 20px; /* Space between grid items */
+    padding: 20px;
 }
 
 .art-item {
-    max-width: 200px;
     text-align: center;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #f9f9f9;
 }
 
 .art-item img {
     max-width: 100%;
-    border-radius: 8px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.art-item h2 {
+    font-size: 1.2em;
+    margin: 10px 0;
 }
 
 /* Responsive design */
