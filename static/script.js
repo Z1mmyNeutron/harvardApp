@@ -4,27 +4,16 @@ document.getElementById('toggleLabelsBtn').addEventListener('click', toggleLabel
 document.getElementById('toggleArtBtn').addEventListener('click', toggleArtVisibility);
 
 let dataLoaded = false;
-let chartsVisible = true; // Tracks whether charts are visible or hidden
-let labelsVisible = true; // Track whether labels are visible
-let artVisible = true; // Track whether art is visible
+let chartsVisible = true;
+let labelsVisible = true;
+let artVisible = true;
 
 const chartOptions = {
     responsive: true,
-    maintainAspectRatio: false, // Allow the chart to fill the container
+    maintainAspectRatio: false,
     plugins: {
         legend: {
-            position: 'top',
-            onClick: (e, legendItem, legend) => {
-                // Handle legend item click
-                const index = legendItem.datasetIndex;
-                const chart = legend.chart;
-                const meta = chart.getDatasetMeta(index);
-
-                meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : null;
-
-                // Update chart
-                chart.update();
-            }
+            position: 'top'
         },
         tooltip: {
             callbacks: {
@@ -53,24 +42,17 @@ async function loadData() {
             return;
         }
 
-        // Process and display pie chart
         displayPieChart(data);
-
-        // Process and display the bar chart
         displayBarChart(data);
-
-        // Process and display line chart
         displayLineChart(data);
-
-        // Display art data
         displayArt(data);
 
-        dataLoaded = true; // Mark data as loaded
+        dataLoaded = true;
         if (!chartsVisible) {
-            toggleDataVisibility(); // Make sure data is shown if it was hidden
+            toggleDataVisibility();
         }
         if (!artVisible) {
-            toggleArtVisibility(); // Make sure art is shown if it was hidden
+            toggleArtVisibility();
         }
 
     } catch (error) {
@@ -99,19 +81,26 @@ function displayPieChart(data) {
                 borderWidth: 1
             }]
         },
-        options: chartOptions
+        options: {
+            ...chartOptions,
+            plugins: {
+                ...chartOptions.plugins,
+                legend: {
+                    ...chartOptions.plugins.legend,
+                    display: labelsVisible
+                }
+            }
+        }
     });
 }
 
 function displayBarChart(data) {
-    // Collect artists and handle 'Unknown Artist'
     const artists = data.map(item => item.artist_name || 'Unknown Artist');
     const artistCounts = artists.reduce((acc, artist) => {
         acc[artist] = (acc[artist] || 0) + 1;
         return acc;
     }, {});
 
-    // Ensure 'Unknown Artist' is included
     if (!artistCounts['Unknown Artist']) {
         artistCounts['Unknown Artist'] = 0;
     }
@@ -194,7 +183,7 @@ function displayLineChart(data) {
 
 function displayArt(data) {
     const artContainer = document.getElementById('artContainer');
-    artContainer.innerHTML = ''; // Clear existing content
+    artContainer.innerHTML = '';
 
     data.forEach(item => {
         const artItem = document.createElement('div');
@@ -225,41 +214,45 @@ function generateColors(count) {
 function toggleDataVisibility() {
     const chartsContainer = document.getElementById('chartsContainer');
     if (chartsVisible) {
-        chartsContainer.style.display = 'none'; // Hide charts
-        document.getElementById('toggleDataBtn').textContent = 'Show Data'; // Update button text
+        chartsContainer.style.display = 'none';
+        document.getElementById('toggleDataBtn').textContent = 'Show Data';
     } else {
         if (dataLoaded) {
-            chartsContainer.style.display = 'block'; // Show charts
+            chartsContainer.style.display = 'block';
         }
-        document.getElementById('toggleDataBtn').textContent = 'Hide Data'; // Update button text
+        document.getElementById('toggleDataBtn').textContent = 'Hide Data';
     }
-    chartsVisible = !chartsVisible; // Toggle the state
+    chartsVisible = !chartsVisible;
 }
 
 function toggleLabelsVisibility() {
     labelsVisible = !labelsVisible;
 
-    // Update the line chart with updated options
     if (window.lineChart) {
         lineChart.options.plugins.legend.display = labelsVisible;
         lineChart.options.scales.x.ticks.display = labelsVisible;
         lineChart.options.scales.x.ticks.autoSkip = !labelsVisible;
-        lineChart.options.scales.y.ticks.display = labelsVisible; // Optionally toggle y-axis labels visibility
+        lineChart.options.scales.y.ticks.display = labelsVisible;
         lineChart.update();
     }
 
-    // Update button text based on current state
+    const pieChart = Chart.getChart('pieChart');
+    if (pieChart) {
+        pieChart.options.plugins.legend.display = labelsVisible;
+        pieChart.update();
+    }
+
     document.getElementById('toggleLabelsBtn').textContent = labelsVisible ? 'Hide Titles/Artists' : 'Show Titles/Artists';
 }
 
 function toggleArtVisibility() {
     const artContainer = document.getElementById('artContainer');
     if (artVisible) {
-        artContainer.style.display = 'none'; // Hide art
-        document.getElementById('toggleArtBtn').textContent = 'Show Art'; // Update button text
+        artContainer.style.display = 'none';
+        document.getElementById('toggleArtBtn').textContent = 'Show Art';
     } else {
-        artContainer.style.display = 'grid'; // Show art
-        document.getElementById('toggleArtBtn').textContent = 'Hide Art'; // Update button text
+        artContainer.style.display = 'grid';
+        document.getElementById('toggleArtBtn').textContent = 'Hide Art';
     }
-    artVisible = !artVisible; // Toggle the state
+    artVisible = !artVisible;
 }
