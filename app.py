@@ -3,10 +3,12 @@ import requests
 from flask_caching import Cache
 from dotenv import load_dotenv
 from statistics import mean, mode, median, variance, stdev, StatisticsError
-
 from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from datetime import datetime
+from reportlab.lib.units import inch
 import io
 import os
 import json
@@ -175,9 +177,31 @@ def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_cou
     width, height = letter
     margin = 50
     chart_height = 400
-    title_space = 20  # Increased space for the chart title
-    chart_space = 20  # Space between title and chart
+    title_space = 20
+    chart_space = 20
     additional_space = 20
+
+    # Header information
+    report_title = "Harvard Art Data Report"
+    author_name = "Christina Zimmer"
+    report_date = datetime.now().strftime("%B %d, %Y")
+
+    # Function to draw the header and footer
+    def draw_header_footer(canvas, doc):
+        canvas.saveState()
+        # Header
+        canvas.setFont('Helvetica-Bold', 10)
+        canvas.drawString(margin, height - margin + 20, report_title)
+        canvas.setFont('Helvetica', 10)
+        canvas.drawString(margin, height - margin + 5, f"Author: {author_name}")
+        canvas.drawString(margin, height - margin - 10, f"Date: {report_date}")
+        
+        # Footer
+        canvas.setFont('Helvetica', 10)
+        page_number_text = f"Page {doc.page}"
+        canvas.drawString(width - margin - 100, margin - 20, page_number_text)
+        
+        canvas.restoreState()
 
     def generate_insights(stats):
         mean_val = stats.get('Mean', 0)
@@ -287,9 +311,12 @@ def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_cou
     })
     add_chart("Line Chart", line_chart_path, line_chart_conclusion, format_counts_as_table(title_counts), additional_line_chart_insights, line_chart_stats)
 
-    doc.build(elements)
+    # Build the PDF with header and footer on each page
+    doc.build(elements, onFirstPage=draw_header_footer, onLaterPages=draw_header_footer)
+
     buffer.seek(0)
     return buffer
+
 
 @app.route('/')
 def index():
