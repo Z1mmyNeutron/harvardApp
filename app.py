@@ -7,8 +7,8 @@ import json
 import matplotlib.pyplot as plt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer
 import io
 
 # Load environment variables from .env file
@@ -37,12 +37,13 @@ def create_charts(data):
         artists.append(artist_name)
 
     # Generate pie chart
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(10, 8))
     title_counts = {title: titles.count(title) for title in set(titles)}
-    labels = list(title_counts.keys())
+    cleaned_labels = [title.strip('[]').strip() for title in title_counts.keys()]
+    labels = cleaned_labels
     counts = list(title_counts.values())
-    plt.pie(counts, labels=labels, autopct='%1.1f%%', startangle=140)
-    plt.title('Pieces of Art with the Same Name')
+    plt.pie(counts, labels=labels, autopct='%1.1f%%', startangle=140, pctdistance=0.85)
+    plt.title('Pieces of Art with the Same Name', fontsize=20)
     pie_chart_path = 'static/pie_chart.png'
     plt.savefig(pie_chart_path)
     plt.close()
@@ -55,9 +56,9 @@ def create_charts(data):
     labels = list(artist_counts.keys())
     counts = list(artist_counts.values())
     plt.bar(labels, counts, color='skyblue')
-    plt.xlabel('Artists')
-    plt.ylabel('Count')
-    plt.title('Artist Count Bar Chart')
+    plt.xlabel('Names of Artists', fontsize=15)
+    plt.ylabel('Count', fontsize=15)
+    plt.title('Artist Count Bar Chart', fontsize=20)
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
     bar_chart_path = 'static/bar_chart.png'
@@ -65,15 +66,16 @@ def create_charts(data):
     plt.close()
 
     # Generate line chart
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(10, 8))
     title_counts = {title: titles.count(title) for title in set(titles)}
     labels = list(title_counts.keys())
     counts = list(title_counts.values())
     plt.plot(labels, counts, marker='o', linestyle='-', color='b')
-    plt.xlabel('Names of Pieces')
-    plt.ylabel('Count')
-    plt.title('Pieces with the Same Title')
-    plt.xticks(rotation=45, ha='right')
+    plt.xlabel('Names of Pieces', fontsize=14)  # Adjust font size
+    plt.ylabel('Count', fontsize=14)  # Adjust font size
+    plt.title('Pieces with the Same Title', fontsize=20)  # Adjust font size
+    plt.xticks(rotation=45, ha='right', fontsize=13)  # Adjust font size
+    plt.yticks(fontsize=10)  # Adjust font size
     plt.tight_layout()
     line_chart_path = 'static/line_chart.png'
     plt.savefig(line_chart_path)
@@ -81,106 +83,73 @@ def create_charts(data):
 
     return pie_chart_path, bar_chart_path, line_chart_path
 
-def format_counts(counts):
-    # Define the width for indentation and count columns
-    indent = " " * 4  # Adjust as needed
-    count_width = 4
-    formatted_counts = ""
-
+def format_counts_as_table(counts):
+    data = [['Title', 'Count']]
     for title, count in counts.items():
-        # Strip leading and trailing brackets, and remove any extra whitespace
         clean_title = title.strip('[]').strip()
-        formatted_counts += f"{indent}{count:>{count_width}}: {clean_title}\n"
-    
-    return formatted_counts.strip()
+        data.append([clean_title, count])
 
-def format_conclusion(title_counts, artist_counts):
-    intro_indent = " " * 3
-    conclusion_text = (
-        "Conclusion:\n\n"
-        "Based on the data collected, we can observe the following insights:\n\n"
-        "1. Pie Chart Analysis:\n"
-        f"{intro_indent}- The pie chart illustrates the distribution of pieces with the same title. The following\n"
-        f"{intro_indent}are the counts for each title:\n"
-        f"{intro_indent}{intro_indent}{format_counts(title_counts)}\n"
-        "2. Bar Chart Analysis:\n"
-        f"{intro_indent}- The bar chart shows the number of pieces attributed to each artist. The artist counts\n"
-        f"{intro_indent}are:\n"
-        f"{intro_indent}{intro_indent}{format_counts(artist_counts)}\n"
-        "3. Line Chart Analysis:\n"
-        f"{intro_indent}- The line chart represents the number of pieces with the same title over time. The\n"
-        f"{intro_indent}counts for each title are:\n"
-        f"{intro_indent}{intro_indent}{format_counts(title_counts)}"
-    )
-    return conclusion_text
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), '#d0d0d0'),
+        ('GRID', (0, 0), (-1, -1), 1, 'black'),
+        ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
+        ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONT', (0, 1), (-1, -1), 'Helvetica'),
+        ('SIZE', (0, 0), (-1, -1), 10),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+
+    return table
 
 def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_counts, artist_counts):
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
     width, height = letter
-    margin = 75
+    margin = 50
     chart_height = 400
-    title_space = 20
-    additional_space = 50
-    y_position = height - margin
+    title_space = 20  # Increased space for the chart title
+    chart_space = 20  # Space between title and chart
+    additional_space = 20
 
-    def add_chart(title, image_path, y_position, conclusion_text):
-        total_height = chart_height + title_space + additional_space
-
-        if y_position < total_height + margin:
-            c.showPage()
-            y_position = height - margin
-
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(margin, y_position, title)
-        c.drawImage(image_path, margin, y_position - chart_height - title_space, width=width - 2 * margin, height=chart_height)
-
-        y_position -= (chart_height + title_space + additional_space)
-
-        # Add conclusion below chart
+    def add_chart(title, image_path, conclusion_text, table_data):
+        elements.append(Paragraph(title, ParagraphStyle(name='Title', fontSize=14, fontName='Helvetica-Bold')))
+        elements.append(Spacer(1, title_space))  # Space for the title
+        elements.append(Image(image_path, width=width - 2 * margin, height=chart_height))
+        elements.append(Spacer(1, chart_space))  # Space between chart and conclusion
+        
         if conclusion_text:
-            c.setFont("Helvetica-Bold", 12)
-            c.drawString(margin, y_position, "Conclusion:")
-            y_position -= 20
+            elements.append(Paragraph("Conclusion:", ParagraphStyle(name='ConclusionTitle', fontSize=12, fontName='Helvetica-Bold')))
+            elements.append(Spacer(1, 10))
+            elements.append(Paragraph(conclusion_text, ParagraphStyle(name='ConclusionText', fontSize=12, fontName='Helvetica')))
+            elements.append(Spacer(1, 10))
 
-            c.setFont("Helvetica", 12)
-            text_object = c.beginText(margin, y_position)
-            text_object.setFont("Helvetica", 12)
-            for line in conclusion_text.split('\n'):
-                # Handle long lines and avoid extra new lines
-                if line.strip():
-                    text_object.textLine(line.strip())
-            c.drawText(text_object)
-            y_position -= len(conclusion_text.split('\n')) * 15  # Adjust spacing based on line count
+        if table_data:
+            elements.append(table_data)
+            elements.append(Spacer(1, additional_space))
+        
+        elements.append(PageBreak())
 
-        return y_position
-
-    # Add Pie Chart
     pie_chart_conclusion = (
-        f"- The pie chart illustrates the distribution of pieces with the same title. The following\n"
-        f"are the counts for each title:\n"
-        f"{format_counts(title_counts)}"
+        f"The pie chart illustrates the distribution of pieces with the same title. The following\n"
+        f"are the counts for each title:"
     )
-    y_position = add_chart("Pie Chart", pie_chart_path, y_position, pie_chart_conclusion)
+    add_chart("Pie Chart", pie_chart_path, pie_chart_conclusion, format_counts_as_table(title_counts))
 
-    # Add Bar Chart
     bar_chart_conclusion = (
-        f"- The bar chart shows the number of pieces attributed to each artist. The artist counts\n"
-        f"are:\n"
-        f"{format_counts(artist_counts)}"
+        f"The bar chart shows the number of pieces attributed to each artist. The artist counts\n"
+        f"are:"
     )
-    y_position = add_chart("Bar Chart", bar_chart_path, y_position, bar_chart_conclusion)
+    add_chart("Bar Chart", bar_chart_path, bar_chart_conclusion, format_counts_as_table(artist_counts))
 
-    # Add Line Chart
     line_chart_conclusion = (
-        f"- The line chart represents the number of pieces with the same title over time. The\n"
-        f"counts for each title are:\n"
-        f"{format_counts(title_counts)}"
+        f"The line chart represents the number of pieces with the same title over time. The\n"
+        f"counts for each title are:"
     )
-    y_position = add_chart("Line Chart", line_chart_path, y_position, line_chart_conclusion)
+    add_chart("Line Chart", line_chart_path, line_chart_conclusion, format_counts_as_table(title_counts))
 
-    # Finalize PDF
-    c.save()
+    doc.build(elements)
     buffer.seek(0)
     return buffer
 
