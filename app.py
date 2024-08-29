@@ -13,7 +13,7 @@ import io
 import os
 import json
 import matplotlib.pyplot as plt
-
+import re 
 # Load environment variables from .env file
 load_dotenv()
 
@@ -363,7 +363,8 @@ def get_data():
             if not title:
                 app.logger.info('Skipped item without title')
                 continue
-
+            title = title.replace('[', '').replace(']', '').strip()
+            
             # Extract artist name if available
             if 'people' in item and len(item['people']) > 0:
                 artist_name = item['people'][0].get('name', 'Unknown artist')
