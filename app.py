@@ -169,7 +169,6 @@ def format_statistics_table(data):
     ]))
 
     return table
-
 def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_counts, artist_counts):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
@@ -232,7 +231,7 @@ def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_cou
         
         return "\n".join(insights)
 
-    def add_chart(title, image_path, conclusion_text, table_data, additional_insights=None, stats_table=None):
+    def add_chart(title, image_path, conclusion_text, table_data, additional_insights=None, stats_table=None, summary=None):
         elements.append(Paragraph(title, ParagraphStyle(name='Title', fontSize=14, fontName='Helvetica-Bold')))
         elements.append(Spacer(1, title_space))  # Space for the title
         elements.append(Image(image_path, width=width - 2 * margin, height=chart_height))
@@ -258,11 +257,18 @@ def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_cou
             elements.append(stats_table)
             elements.append(Spacer(1, additional_space))
         
+        if summary:
+            elements.append(Paragraph("Summary:", ParagraphStyle(name='SummaryTitle', fontSize=12, fontName='Helvetica-Bold')))
+            elements.append(Spacer(1, 10))
+            elements.append(Paragraph(summary, ParagraphStyle(name='SummaryText', fontSize=12, fontName='Helvetica')))
+            elements.append(Spacer(1, additional_space))
+        
         elements.append(PageBreak())
 
     pie_chart_conclusion = (
-        "The pie chart illustrates the distribution of pieces with the same title. The following are\n"
-        "the counts for each title:"
+        "The pie chart provides an informative and visually engaging depiction of the distribution of artwork pieces that share identical titles. By presenting the data in this way, the chart highlights the relative frequency of each title within the dataset. This representation can be particularly revealing, offering insights into patterns or trends in the way artworks are named. "
+        "For instance, a concentration of pieces with the same title might suggest that certain themes or concepts are popular among artists, indicating either a series of works centered around a common idea or a prevalent trend in artistic naming conventions. Alternatively, it could reflect a shared influence or cultural reference that resonates across multiple artists. "
+        "The chart not only helps in visualizing these patterns but also allows for a comparative analysis of how titles are distributed. By examining the sections of the pie chart, one can discern which titles are more common and which are less so, providing a clearer understanding of the dataset's composition. The specific counts for each title are detailed below, offering a quantitative breakdown that complements the visual overview provided by the chart."
     )
     pie_chart_stats = format_statistics_table(list(title_counts.values()))
     additional_pie_chart_insights = generate_insights({
@@ -275,12 +281,19 @@ def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_cou
         'Max': max(title_counts.values()),
         'Count': len(title_counts.values())
     })
-    add_chart("Pie Chart", pie_chart_path, pie_chart_conclusion, format_counts_as_table(title_counts), additional_pie_chart_insights, pie_chart_stats)
-
-    bar_chart_conclusion = (
-        "The bar chart shows the number of pieces attributed to each artist. The artist counts\n"
-        "are:"
+    pie_chart_summary = (
+        "The pie chart provides a visual representation of the distribution of artwork pieces that share identical titles. This type of chart is particularly useful for understanding patterns within a collection, revealing whether there are common themes or trends in the way artists title their works. By examining the proportions displayed, one can gain insights into the prevalence of specific titles, which might indicate a popular series, a recurring motif, or a broader trend within the art world. "
+        "The chart breaks down the frequency of each title, offering a clear view of how often each title appears in the dataset."
     )
+    add_chart("Pie Chart", pie_chart_path, pie_chart_conclusion, format_counts_as_table(title_counts), additional_pie_chart_insights, pie_chart_stats, pie_chart_summary)
+    
+    bar_chart_conclusion = (
+    "The bar chart provides a comprehensive visual representation of the distribution of artwork pieces across different artists. It effectively illustrates the number of pieces attributed to each artist, highlighting the relative abundance of works by individual artists within the dataset. By displaying this information in a bar chart format, one can easily compare the volume of artworks created by various artists, thereby identifying which artists have a more substantial presence in the collection, or the lack of their record in the Harvard Database. In the latter case, it helps showcase just how much of history is lost due to a failure of record. This chart is instrumental in understanding the distribution of artistic contributions and can reveal patterns or trends related to the popularity or prolificacy of certain artists as well as a failure on our part to properly document data. The following section enumerates the specific counts of artwork attributed to each artist, offering a clear and quantifiable view of their contributions or lack thereof."
+    )
+    bar_chart_summary = (
+    "The bar chart offers an insightful depiction of how artwork pieces are distributed among various artists, providing a clear view of the number of works attributed to each individual. This visualization effectively highlights the relative prominence of artists within the dataset, making it easy to compare the volume of their contributions. By examining this chart, one can quickly identify artists who have a significant presence in the collection as well as those who are underrepresented or missing entirely from the Harvard Database. In cases where artists are not adequately represented, the chart underscores the potential historical gaps and the impact of incomplete record-keeping. This analysis not only sheds light on the artistic contributions of various individuals but also reveals patterns related to their popularity, prolificacy, and the challenges of maintaining comprehensive records. The subsequent section details the specific counts of artwork attributed to each artist, providing a quantitative breakdown of their contributions or the lack thereof."
+    )
+
     bar_chart_stats = format_statistics_table(list(artist_counts.values()))
     additional_bar_chart_insights = generate_insights({
         'Mean': mean(artist_counts.values()),
@@ -292,11 +305,13 @@ def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_cou
         'Max': max(artist_counts.values()),
         'Count': len(artist_counts.values())
     })
-    add_chart("Bar Chart", bar_chart_path, bar_chart_conclusion, format_counts_as_table(artist_counts), additional_bar_chart_insights, bar_chart_stats)
+    add_chart("Bar Chart", bar_chart_path, bar_chart_conclusion, format_counts_as_table(artist_counts), additional_bar_chart_insights, bar_chart_stats, bar_chart_summary)
 
     line_chart_conclusion = (
-        "The line chart represents the number of pieces with the same title over time. The\n"
-        "counts for each title are:"
+           "The line chart provides a detailed view of the distribution of artwork pieces that share identical titles, based on data from the Harvard Museum. This chart highlights the number of pieces for each title, offering a clear picture of how common or rare certain titles are within the collection. By visualizing the counts of pieces with the same title, the chart reveals patterns and trends in title prevalence, reflecting artistic preferences and naming conventions. The visualization helps to identify titles with high or low occurrences, showcasing variations in the dataset without specifying particular time periods. The subsequent section provides a detailed count for each title, offering a precise breakdown of the number of pieces associated with each title."
+    )
+    line_chart_summary = (
+    "The line chart visually represents the distribution of artwork pieces with identical titles within the dataset from the Harvard Museum. This chart provides an overview of how often each title appears, regardless of the specific time periods of the artworks. It highlights variations in the number of pieces with the same title, allowing for the identification of trends and patterns in title frequency. By examining this chart, one can discern which titles are more prevalent and how their distribution varies across the dataset. This summary section enumerates the exact counts for each title, offering a clear and detailed view of the title distribution."
     )
     line_chart_stats = format_statistics_table(list(title_counts.values()))
     additional_line_chart_insights = generate_insights({
@@ -309,7 +324,7 @@ def create_pdf_report(pie_chart_path, bar_chart_path, line_chart_path, title_cou
         'Max': max(title_counts.values()),
         'Count': len(title_counts.values())
     })
-    add_chart("Line Chart", line_chart_path, line_chart_conclusion, format_counts_as_table(title_counts), additional_line_chart_insights, line_chart_stats)
+    add_chart("Line Chart", line_chart_path, line_chart_conclusion, format_counts_as_table(title_counts), additional_line_chart_insights, line_chart_stats, line_chart_summary)
 
     # Build the PDF with header and footer on each page
     doc.build(elements, onFirstPage=draw_header_footer, onLaterPages=draw_header_footer)
