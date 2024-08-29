@@ -2,15 +2,15 @@ from flask import Flask, render_template, jsonify, send_file
 import requests
 from flask_caching import Cache
 from dotenv import load_dotenv
-import os
-import json
-import matplotlib.pyplot as plt
+from statistics import mean, mode, median, StatisticsError
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import io
-
+import os
+import json
+import matplotlib.pyplot as plt
 # Load environment variables from .env file
 load_dotenv()
 
@@ -53,7 +53,8 @@ def create_charts(data):
     artist_counts = {artist: artists.count(artist) for artist in set(artists)}
     if 'Unknown Artist' not in artist_counts:
         artist_counts['Unknown Artist'] = 0
-    labels = list(artist_counts.keys())
+    cleaned_artist_labels = [artist.strip('[]').strip() for artist in artist_counts.keys()]
+    labels = cleaned_artist_labels
     counts = list(artist_counts.values())
     plt.bar(labels, counts, color='skyblue')
     plt.xlabel('Names of Artists', fontsize=15)
@@ -68,7 +69,8 @@ def create_charts(data):
     # Generate line chart
     plt.figure(figsize=(10, 8))
     title_counts = {title: titles.count(title) for title in set(titles)}
-    labels = list(title_counts.keys())
+    cleaned_title_labels = [title.strip('[]').strip() for title in title_counts.keys()]
+    labels = cleaned_title_labels
     counts = list(title_counts.values())
     plt.plot(labels, counts, marker='o', linestyle='-', color='b')
     plt.xlabel('Names of Pieces', fontsize=14)  # Adjust font size
